@@ -1,0 +1,39 @@
+{
+  "id": "15ef0200-2b0a-4d93-bed4-a9d5cf9953f6",
+  "name": "Writing Better Code",
+  "publisher": "Vjeko.com",
+  "version": "1.0.0.0",
+  "brief": "",
+  "description": "",
+  "privacyStatement": "",
+  "EULA": "",
+  "help": "",
+  "url": "",
+  "logo": "",
+  "dependencies": [],
+  "screenshots": [],
+  "platform": "1.0.0.0",
+  "application": "22.0.0.0",
+  "idRanges": [
+    {
+      "from": 60100,
+      "to": 60149
+    }
+  ],
+  "resourceExposurePolicy": {
+    "allowDebugging": true,
+    "allowDownloadingSource": true,
+    "includeSourceInSymbolFile": true
+  },
+  "runtime": "12.0",
+  "features": [
+    "NoImplicitWith"
+  ],
+  "internalsVisibleTo": [
+    {
+      "id": "d1f734de-39c2-4c09-9b2e-fe337a025609",
+      "name": "Writing Better Code - Tests",
+      "publisher": "Vjeko.com"    
+    }
+  ]
+}

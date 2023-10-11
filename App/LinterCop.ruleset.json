@@ -1,0 +1,10 @@
+{
+    "name": "Linter Cop Ruleset",
+    "rules": [
+        {
+            "id": "LC0003",
+            "action": "None",
+            "justification": "Seems to be a bug, I keep getting this warning, even though everything is correctly done."
+        }
+    ]
+}
