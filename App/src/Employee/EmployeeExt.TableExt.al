@@ -166,10 +166,20 @@ tableextension 60100 EmployeeExt extends Employee
         }
     }
 
-    procedure CalculateSalary(AtDate: Date) Salary: Record MonthlySalary
+    internal procedure CalculateSalary(AtDate: Date) Salary: Record MonthlySalary
     var
         Calculate: Codeunit SalaryCalculate;
     begin
         exit(Calculate.CalculateSalary(Rec, AtDate))
     end;
+
+    internal procedure PreviewSalary()
+    var
+        TempMonthlySalary: Record MonthlySalary temporary;
+    begin
+        TempMonthlySalary := Rec.CalculateSalary(WorkDate());
+        TempMonthlySalary.Insert();
+        Page.RunModal(Page::MonhtlySalaryPreview, TempMonthlySalary);
+    end;
+
 }

@@ -2,8 +2,6 @@ namespace Demo.Salary;
 
 using Microsoft.HumanResources.Employee;
 
-// TODO Salary preview calculates salary and bonus and shows them in a popup dialog
-
 pageextension 60100 EmployeeCardExt extends "Employee Card"
 {
     layout
@@ -82,6 +80,28 @@ pageextension 60100 EmployeeCardExt extends "Employee Card"
             {
                 ApplicationArea = All;
                 SubPageLink = "Employee No." = field("No.");
+            }
+        }
+    }
+
+    actions
+    {
+        addlast(Processing)
+        {
+            action(PreviewSalary)
+            {
+                Caption = 'Preview Salary';
+                Image = Calculate;
+                Promoted = true;
+                PromotedCategory = Process;
+                PromotedIsBig = true;
+                ApplicationArea = All;
+                ToolTip = 'Calculates and previews the salary for this employee on the current date.';
+
+                trigger OnAction()
+                begin
+                    Rec.PreviewSalary();
+                end;
             }
         }
     }
