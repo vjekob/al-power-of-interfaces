@@ -1,5 +1,0 @@
-{
-  "cyclomaticComplexityThreshold": 8,
-  "maintainabilityIndexThreshold": 0,
-  "enableRule0010ForTableFields": false
-}
