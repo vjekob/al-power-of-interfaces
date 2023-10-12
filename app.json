@@ -1,7 +1,7 @@
 {
-  "id": "d1f734de-39c2-4c09-9b2e-fe337a025609",
-  "name": "Writing Better Code - Tests",
-  "publisher": "Vjeko.com",
+  "id": "03b2e328-529e-4ba0-9a2f-03667d34de36",
+  "name": "Exercise 1 - Decoupling Dependencies",
+  "publisher": "Default publisher",
   "version": "1.0.0.0",
   "brief": "",
   "description": "",
@@ -12,22 +12,16 @@
   "logo": "",
   "dependencies": [
     {
-      "id": "15ef0200-2b0a-4d93-bed4-a9d5cf9953f6",
-      "name": "Writing Better Code",
-      "publisher": "Vjeko.com",
-      "version": "1.0.0.0"
+      "id": "dd0be2ea-f733-4d65-bb34-a28f4624fb14",
+      "publisher": "Microsoft",
+      "name": "Library Assert",
+      "version": "22.0.0.0"
     },
     {
       "id": "5d86850b-0d76-4eca-bd7b-951ad998e997",
       "name": "Tests-TestLibraries",
       "publisher": "Microsoft",
-      "version": "1.0.0.0"
-    },
-    {
-      "id": "23de40a6-dfe8-4f80-80db-d70f83ce8caf",
-      "publisher": "Microsoft",
-      "name": "Test Runner",
-      "version": "1.0.0.0"
+      "version": "22.0.0.0"
     }
   ],
   "screenshots": [],
@@ -35,8 +29,8 @@
   "application": "22.0.0.0",
   "idRanges": [
     {
-      "from": 60150,
-      "to": 60199
+      "from": 50100,
+      "to": 50149
     }
   ],
   "resourceExposurePolicy": {

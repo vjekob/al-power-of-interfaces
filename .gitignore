@@ -1,4 +1,4 @@
-**/.alpackages
-**/*.app
-**/.vscode/rad.json
-**/.snapshots
+*.app
+.alpackages
+.snapshots
+rad.json

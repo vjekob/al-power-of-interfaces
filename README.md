@@ -1,16 +1,11 @@
-# Power of Interfaces
+# Exercise 1: Decoupling dependencies
 
-Welcome to ***Power of Interfaces - Writing better code (and better tests)*** workshop by Vjekoslav Babić.
+In this exercise you have an example of very tightly-coupled code. The code is not flexible, it's not extensible, and it's also very difficult to test it.
 
-This workshop is about:
-* Interfaces, what they are and how to use them
-* SOLID principles, and how to apply them in your daily AL development work
-* Dependencies, and how to identify and manage them properly
-* Behaviors, and how to avoid spaghetti unreadable code
-* Testing with doubles, and why interfaces are better than events for that
+Your goal is to decouple the dependencies, so that:
+- You can easily exchange any of the dependencies (for example, telemetry logging instead of database logging)
+- You can test the dependencies in isolation (you don't need to write any tests at this stage)
 
-When you attend this workshop, you'll not just learn what interfaces are, but you will harness their power to take your AL development skills to a completely new level, that was unimaginable before by most AL developers.
+When doing this, think of how interfaces could help. Also, think of how enums could help, too.
 
-This repository contains the case study code examples that most of this workshop's demos and all of this workshop's exercises are based upon.
-
-You'll get instructions on how to use this repository when you attend this workshop.
+Be ready to present and discuss your improvements in the classroom.
