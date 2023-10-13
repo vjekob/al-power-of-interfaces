@@ -36,13 +36,15 @@ codeunit 60100 SalaryCalculate
         // Calculate base salary
         Salary := Employee.BaseSalary;
 
-        if Employee.BaseSalary = 0 then
+        if Employee.BaseSalary = 0 then begin
+            Salary := Setup.BaseSalary;
             if Employee.DepartmentCode <> '' then begin
                 Department.Get(Employee.DepartmentCode);
                 Salary := Department.BaseSalary;
                 if DepartmentSenioritySetup.Get(Employee.DepartmentCode, Employee.Seniority) then
                     Salary := DepartmentSenioritySetup.BaseSalary;
             end;
+        end;
 
         // Calculate bonus
         StartingDate := CalcDate('<CM+1D-1M>', AtDate);
