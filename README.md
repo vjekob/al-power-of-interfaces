@@ -1,109 +1,129 @@
-# Open Closed Principle
+# Liskov Substitution Principle
 
-In this exercise, you implement the improvements that follow the Open Closed Principle.
+In this exercise, you implement the improvements that follow the Liskov Substitution Principle.
 
 ## Scenario
 
-The customer has decided to implement a new salary calculation model. This one has no base salary at all, and calculates bonus based on company performance. It rewards the employees in special roles, who are willing to take personal responsibility in the company's overall success, by allowing them to share on the profits on the company.
+The customer wants to implement a new time tracking system. Instead of using Timesheets from BC, they want to use a new, automated, smart-card based cloud system named "Timetracker". Some employees will still keep using the old system, and eventually, after [*canary release*](https://en.wikipedia.org/wiki/Feature_toggle#Canary_release) period, everyone will migrate to the new system, and abandon the old system.
 
-You realize that to accommodate for this change, you need to change existing code, potentially breaking both the code and tests. You anticipate that in the future the customer may want to implement even more different salary calculation models, and want to make sure that any future additions follow the Open Closed Principle.
+The customer is not 100% convinced that the new system is going to pass this canary release, and maybe after a few months they realize that they want something else.
+
+The solution you develop must be ready to accept any future time tracking system without much effort from your side.
+
+## Problem statement
+
+Sometimes you have a single task that may be achieved in different ways. Remember the "Print Button" example from the introduction where the button didn't have to know exactly how the printing will be achieved - any printer you choose will get the job done. Or, remember the scale example in which you may want to exchange your default (Tefal) scale with a different one (B-TEK or Mettler-Toledo) and you also wanted to be able to configure different customers with different scale types, all while not having to change any of the existing code.
+
+When code is tightly coupled (again, remember the starting point of the scale demo), you cannot replace the existing scale functionality with a different one without changing the code. This is a violation of the Liskov Substitution Principle. Liskov Substitution Principle states that you should be able to replace any instance of a class with an instance of its subclass without breaking the code. In other words, you should be able to replace any implementation of an interface with a different implementation of the same interface without breaking the code.
 
 ## Instructions
 
-1. Create a new interface named `ISalaryCalculator` with methods for calculating base salary, bonus, and incentive.
-   > Hint: If you are a copy/paste person, here's the code for you:
-   > ```AL
-   > namespace Demo.Salary;
-   >
-   > using Microsoft.HumanResources.Employee;
-   >
-   > interface ISalaryCalculator
-   > {
-   >     procedure CalculateBaseSalary(Employee: Record Employee; Setup: Record SalarySetup): Decimal;
-   >     procedure CalculateBonus(Employee: Record Employee; Setup: Record SalarySetup; Salary: Decimal; StartingDate: Date; EndingDate: Date): Decimal;
-   >     procedure CalculateIncentive(Employee: Record Employee; Setup: Record SalarySetup; Salary: Decimal; AtDate: Date): Decimal;
-   > }
-   >```
+1. Create a new interface called `IWorkHoursProvider` that will be used to get the work hours for a given employee. The interface should have a single method:
+   ```AL
+   procedure CalculateHours(Employee: Record Employee; StartingDate: Date; EndingDate: Date): Decimal;
+   ```
 
-2. Create four codeunits, one each for fixed, timesheet, commission, and target calculation models. All four must implement `ISalaryCalculator`. Copy the relevant code from `SalaryCalculate` codeunit into these codeunits, so that each of those codeunits performs the full work of what the original functions did in `SalaryCalculate` where you copied them from.
+2. Create a codeunit called `BCWorkHoursProvider` that implements the `IWorkHoursProvider` interface. Move the code from `SalaryCalculatorTimesheet` that calculates work hours based on BC TimeSheet headers and lines into the implementation inside `BCWorkHoursProvider`.
 
-    > Hint: At this point, you'll see that you are generating a lot of duplication, and duplication is never good. However, you'll fix that in one of the next exercises. In real life, duplicated code very often occurs and when it does, it's usually an indicator of other problems. We'll cover those problems when we talk about Liskov Substitution Principle and Interface Segregation Principle. So, for now, just keep the duplication.
+3. You need another codeunit called `TimetrackingWorkHoursProvider` that implements the `IWorkHoursProvider` interface and reads the data from the Timetracker cloud system. This codeunit should implement the API protocol of Timetracker, read the data from the cloud, write it to the database, and return the calculated work hours.
 
-3. Modify the `SalaryType` enum to add the `implements` clause for your new interface. Provide a matching implementation for each of the enum values.
+> Hint: **DO NOT** create this codeunit. It is provided for you already. You can find it inside the `Timetracker` folder that already contains some more objects you need for Timetracker (setup table and page, a table to keep Timetracker entries, and a factbox to present those entries on the Employee card). The code in this codeunit is commented out to not cause any compile-time errors that may result from different naming you used for the interface or its methods.
 
-4. Modify the code inside the `CalculateSalary` function in the `SalaryCalculate` codeunit to retrieve the correct implementation of `ISalaryCalculator` interface from `SalaryType`, and then invoke the methods from the interface, instead of calling local functions you copied into interface implementations.
+4. Uncomment the code in `TimetrackingWorkHoursProvider` codeunit.
 
-5. Clean up the code inside the `SalaryCalculate` codeunit to remove any remaining unused code or `using` declarations.
+5. Add a new field to the `Employee` table called `TimetrackerEmployeeId` of type `Text[10]`. This field will be used to store the ID of the employee in the Timetracker cloud system. Add the same field to the `Employee Card` page.
 
-> At this point, you have correctly implemented the Open Closed Principle by allowing easy addition of a new implementation. Good job!
-
-## Extending without modification
-
-In this task, you take advantage of the fact that your solution now supports Open Closed Principle. You are going to add a new salary calculation model without touching any of the existing code that calculates salaries.
-
-1. Create a new codeunit named `SalaryCalculatorPerformance` that implements the `ISalaryCalculator` interface and provides the new performance-based salary calculation model. This model has no base salary and no incentives. Bonus calculation for this model works like this:
+6. Add a new action to the `Employee Card` page:
     ```AL
-    procedure CalculateBonus(Employee: Record Employee; Setup: Record SalarySetup; Salary: Decimal; StartingDate: Date; EndingDate: Date) Bonus: Decimal;
+        action(GetTimetrackerData)
+        {
+            Caption = 'Get Timetracker Data';
+            Promoted = true;
+            Image = Timesheet;
+            ApplicationArea = All;
+            ToolTip = 'Gets employee''s worksheet data from Timetracker.';
+
+            trigger OnAction()
+            var
+                TimetrackerProvider: Codeunit TimetrackerWorkHoursProvider;
+            begin
+                TimetrackerProvider.CalculateHours(Rec, WorkDate(), WorkDate());
+                CurrPage.Update(false);
+            end;
+        }
+    ```
+6. You need a way to provide the correct implementation of the `IWorkHoursProvider` interface to the `SalaryCalculatorTimesheet` codeunit. Create a new function in the `EmployeeExt` table extension that will serve as a factory for this interface:
+    ```AL
+    internal procedure GetWorkHoursProvider(): Interface IWorkHoursProvider
     var
-        GLAccount: Record "G/L Account";
-        GLEntry: Record "G/L Entry";
-        Income: Decimal;
-        Expense: Decimal;
-        Profit: Decimal;
+        BCWorkHoursProvider: Codeunit BCWorkHoursProvider;
+        TimetrackerWorkHoursProvider: Codeunit TimetrackerWorkHoursProvider;
     begin
-        GLEntry.SetRange("Posting Date", StartingDate, EndingDate);
-
-        GLAccount.Get(Setup.IncomeAccountNo);
-        GLEntry.SetFilter("G/L Account No.", GLAccount.Totaling);
-        GLEntry.CalcSums(Amount);
-        Income := GLEntry.Amount;
-
-        GLAccount.Get(Setup.ExpenseAccountNo);
-        GLEntry.SetFilter("G/L Account No.", GLAccount.Totaling);
-        GLEntry.CalcSums(Amount);
-        Expense := GLEntry.Amount;
-
-        Profit := Income - Expense;
-        if (Profit > 0) then
-            Bonus := (Employee.PerformanceBonusPct / 100) * Profit;
+        if Rec.TimetrackerEmployeeId <> '' then
+            exit(TimetrackerWorkHoursProvider)
+        else
+            exit(BCWorkHoursProvider);
     end;
     ```
 
-2. The function above does not compile. You need to add fields `IncomeAccountNo` and `ExpenseAccountNo` to the `SalarySetup` table. Both fields should define this property: `TableRelation = "G/L Account" where("Account Type" = const(Total));`. Also, add a new field `PerformanceBonusPct` to the `Employee` table.
+7. Modify the code in `SalaryCalculatorTimesheet` codeunit to retrieve the correct implementation of the `IWorkHoursProvider` interface and then call this interface to calculate work hours. You do this in place of the original code that used timesheets to calculate work hours.
 
-3. Add a new value to the `SalaryType` enum, named `Performance`, and provide a matching implementation for it.
+At this point, you applied Liskov Substitution Principle by making it possible to substitute one type of work hours calculation with any other without changing `SalaryCalculatorTimesheet` (its consumer) ever in the future. As long as you retain your factory function in the `Employee` table, you can always just add more implementations of the `IWorkHoursProvider` interface and maintain the factory function accordingly. Substituting one workhours calculator with another one has no influence on correctness of the entire salary calculation process.
 
-> At this point, you are already reaping fruit from the fact that your code has supported the Open Closed Principle: to add a new model, the only thing you had to do was provide its implementation. Adding new models in the future will be equally simple for you, or for anyone else who extends your app.
+> Hint: you could have added an enum for this, it would have achieved the same. However, the point of this exercise was to show that enums are not the only way of addressing the dependency substitution problem, and that simple factory functions can often be used instead. It all depends on your end goals. If you intend for third parties to be able to add their own work hours providers, then you would have done it with an enum. If you intend to fully control the process, then the approach you just did works better (especially for canary release or other types of continuous deployment techniques).
 
-## Going one step further
+## Configuring Timetracker
 
-You notice that while you correctly managed to get rid of any explicit decisions (`case` blocks) that handled `SalaryType`, but you still have many decision points that introduce logical branching around the `Seniority` of an employee. For example, bonus is different for managers and directors than for other levels, and incentives are different for managers than for other levels. Adding more seniority levels in the future would require you to modify your code, and extending it by third-party apps would be outright impossible. Both of these things violate the Open Closed Principle, so you decide to fix that, too!
+You can configure your Timetracker integration in the `TimetrackerSetup` page by providing the following info:
 
-1. Create a new interface named `ISeniorityBonus` like this:
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Service URL | `https://demo-timetracker.azurewebsites.net`               |
+| Access Key  | `41gbjkHHRgdpXNFdOFLs71QLnOP0OXFe2z_XMzd0oNpRAzFudh-lHA==` |
 
-    ```AL
-    namespace Demo.Salary;
+You can use any of these employee IDs to configure the Timetracker integration for some employees. Do not pick the first one, just pick a random one.
 
-    using Microsoft.HumanResources.Employee;
+```
+9gIeqbZs
+0Rqv01eg
+xq3l0wlB
+CyxFSeIU
+rcvLIiLo
+7J3GBTsQ
+k5LOfSsz
+cG1ZRcmy
+mqGulwuc
+4fHOMXm5
+AQL9vMCI
+QwKraAPf
+66idIoXV
+hEtGUtPs
+ZCuClZ5H
+4BHbJc56
+3exRy1m8
+vxuwlRMh
+xjcoqK3U
+O91YVS1W
+0pHQ1PTk
+Qlzdjexz
+AvgLX00V
+VjTXEqRF
+sMVKduMb
+qsU1me8V
+m2LVznkD
+38XeFnXh
+hH5Atq95
+XWSlpz4Q
+tOjWmj8v
+8sW4WHkS
+aI6lB87j
+MZHnmULv
+OjiEKymc
+qAM16m9U
+VOCMrP38
+lbzBaxC5
+jCGg5qEI
+5oDv0CIy
+```
 
-    interface ISeniorityBonus
-    {
-        procedure ProvidesBonusCalculation(): Boolean;
-        procedure ProvidesIncentiveCalculation(): Boolean;
-        procedure CalculateBonus(Employee: Record Employee; AtDate: Date): Decimal;
-        procedure CalculateIncentive(Employee: Record Employee; AtDate: Date): Decimal
-    }
-    ```
-
-2. Create a default implementation that returns `false` from both `Provides...` methods, and provides no code inside the other two methods. 
-
-3. Create a manager implementation that returns `true` from both `Provides...` methods. Move the appropriate code from `CalculateTeamBonus` and `CalculateTeamIncentive` functions of any of salary calculation codeunits (all contain the exact same code, so it doesn't matter which one) into this codeunit.
-
-4. Create a director implementation that returns `true` from both `Provides...` methods. Move the appropriate code from `CalculateTeamBonus` function, just like you did in the previous step. Do not provide any calculation for `CalculateIncentive` as directors don't have incentives.
-
-5. Modify all salary calculation codeunits to remove any logic that checks `Seniority`. Those codeunits provide the existing incentive calculation. The team-based calculation is moved to the new interface and its implementations. Remove any unnecessary functions from all of them (`CalculateTeamBonus` and `CalculateIncentive`).
-
-6. In `SalaryCalculate` retrieve the correct implementation of `ISeniorityBonus` interface from `Seniority` of the employee, and then invoke the `CalculateBonus` and `CalculateIncentive` from `ISeniorityBonus` if it provides own implementation, and otherwise call it from `ISalaryCalculator`. Do the same for incentive calculation.
-
-> At this point, you have fully supported Open Closed Principle on all your enums, making them extensible without any further need for changes. Anyone can add new seniority levels with their own custom logic, without ever requiring any changes in your existing code.
-
+There is also a file named `test.azure.http` that uses the [REST Client extension](https://marketplace.visualstudio.com/items?itemName=humao.rest-client) for Visual Studio Code. You can use this file to test the Timetracker API, learn about about its integration protocol, and see why the implementation in `TimetrackerWorkHoursProvider` codeunit is the way it is.

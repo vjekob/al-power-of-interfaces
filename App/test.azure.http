@@ -1,0 +1,19 @@
+@employeeId = m2LVznkD
+
+# @name workhours
+get https://demo-timetracker.azurewebsites.net/api/v2.0/workhours/{{employeeId}}/2023/1
+X-Functions-Key: 41gbjkHHRgdpXNFdOFLs71QLnOP0OXFe2z_XMzd0oNpRAzFudh-lHA==
+###x
+
+@ticket = {{workhours.response.body.$.ticket}}
+
+###
+
+# @name status
+get https://demo-timetracker.azurewebsites.net/api/v2.0/status/{{ticket}}
+X-Functions-Key: 41gbjkHHRgdpXNFdOFLs71QLnOP0OXFe2z_XMzd0oNpRAzFudh-lHA==
+
+###
+
+get https://demo-timetracker.azurewebsites.net/api/v2.0/results/vs7vqlm62h9
+X-Functions-Key: 41gbjkHHRgdpXNFdOFLs71QLnOP0OXFe2z_XMzd0oNpRAzFudh-lHA==
